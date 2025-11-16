@@ -78,8 +78,6 @@ impl Operator for BatchNorm2D {
         let mean_data = running_mean.data();
         let var_data = running_var.data();
 
-        let spatial_size = height * width;
-
         for b in 0..batch {
             for c in 0..channels {
                 let mean = mean_data[c];
@@ -143,8 +141,6 @@ impl Operator for LayerNorm {
         let input = inputs[0];
         let gamma = inputs[1];
         let beta = inputs[2];
-
-        let input_shape = input.shape().dims();
 
         // Calculate normalized size
         let norm_size: usize = self.normalized_shape.iter().product();

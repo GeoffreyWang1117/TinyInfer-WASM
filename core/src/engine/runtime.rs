@@ -1,7 +1,7 @@
 use crate::error::{Result, TinyInferError};
 use crate::ops::*;
 use crate::tensor::Tensor;
-use super::{Model, NodeType};
+use super::{Model, graph::NodeType};
 use std::collections::HashMap;
 
 /// Runtime for executing models
@@ -111,7 +111,7 @@ impl Runtime {
         }
 
         // Create operator and execute
-        let inputs_ref: Vec<&Tensor> = input_tensors.iter().map(|t| t).collect();
+        let inputs_ref: Vec<&Tensor> = input_tensors.iter().copied().collect();
 
         match op_type {
             "ReLU" => {

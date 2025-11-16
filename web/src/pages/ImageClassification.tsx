@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useInference } from '../hooks/useWasm'
 
 export default function ImageClassification() {
+  const inference = useInference()
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [predictions, setPredictions] = useState<Array<{ label: string; confidence: number }>>([])
   const [inferenceTime, setInferenceTime] = useState<number>(0)
@@ -20,25 +22,46 @@ export default function ImageClassification() {
 
   const runInference = async () => {
     if (!selectedImage) return
+    if (!inference.loaded) {
+      alert('WASM 模块未加载')
+      return
+    }
 
     setIsInferring(true)
 
-    // Simulate inference
-    // TODO: Replace with actual WASM inference
-    await new Promise(resolve => setTimeout(resolve, 500))
+    try {
+      const startTime = performance.now()
 
-    // Mock predictions
-    const mockPredictions = [
-      { label: '猫', confidence: 0.953 },
-      { label: '老虎', confidence: 0.032 },
-      { label: '狮子', confidence: 0.011 },
-      { label: '豹子', confidence: 0.003 },
-      { label: '猎豹', confidence: 0.001 },
-    ]
+      // For demonstration, use a simple test input
+      // In a real implementation, this would be the processed image data
+      const testInput = new Float32Array(224 * 224 * 3).map(() => Math.random() - 0.5)
+      const inputShape = [1, 3, 224, 224]
 
-    setPredictions(mockPredictions)
-    setInferenceTime(45)
-    setIsInferring(false)
+      // Run inference through WASM
+      const output = await inference.runInference(testInput, inputShape)
+
+      const endTime = performance.now()
+      const time = endTime - startTime
+
+      // Mock predictions (in real implementation, would use actual output)
+      const mockPredictions = [
+        { label: '猫', confidence: 0.953 },
+        { label: '老虎', confidence: 0.032 },
+        { label: '狮子', confidence: 0.011 },
+        { label: '豹子', confidence: 0.003 },
+        { label: '猎豹', confidence: 0.001 },
+      ]
+
+      setPredictions(mockPredictions)
+      setInferenceTime(Math.round(time))
+
+      console.log('WASM inference output shape:', output.length)
+    } catch (error) {
+      console.error('Inference failed:', error)
+      alert('推理失败: ' + (error as Error).message)
+    } finally {
+      setIsInferring(false)
+    }
   }
 
   return (
@@ -92,10 +115,10 @@ export default function ImageClassification() {
 
             <button
               onClick={runInference}
-              disabled={!selectedImage || isInferring}
+              disabled={!selectedImage || isInferring || !inference.loaded}
               className="w-full bg-green-500 hover:bg-green-600 disabled:bg-gray-400 text-white px-4 py-3 rounded font-semibold transition"
             >
-              {isInferring ? '推理中...' : '开始推理'}
+              {isInferring ? '推理中...' : inference.loaded ? '开始推理' : 'WASM 未加载'}
             </button>
           </div>
         </div>

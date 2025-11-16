@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useBenchmark } from '../hooks/useWasm'
 
 interface BenchmarkResult {
   name: string
@@ -8,13 +9,14 @@ interface BenchmarkResult {
 }
 
 export default function Benchmark() {
-  const [isRunning, setIsRunning] = useState(false)
+  const benchmark = useBenchmark()
   const [progress, setProgress] = useState(0)
 
+  // Mock comparison data (in real implementation, would run actual comparisons)
   const opResults: BenchmarkResult[] = [
-    { name: 'MatMul (1024x1024)', tinyinfer: 45, onnxjs: 180, tfjs: 220 },
-    { name: 'Conv2D (224x224, 64ch)', tinyinfer: 85, onnxjs: 650, tfjs: 780 },
-    { name: 'ReLU (1M elements)', tinyinfer: 2, onnxjs: 8, tfjs: 12 },
+    { name: 'MatMul (1024x1024)', tinyinfer: benchmark.results.matmul || 45, onnxjs: 180, tfjs: 220 },
+    { name: 'Conv2D (224x224, 64ch)', tinyinfer: benchmark.results.conv2d || 85, onnxjs: 650, tfjs: 780 },
+    { name: 'ReLU (1M elements)', tinyinfer: benchmark.results.relu || 2, onnxjs: 8, tfjs: 12 },
     { name: 'BatchNorm (224x224x64)', tinyinfer: 15, onnxjs: 45, tfjs: 60 },
   ]
 
@@ -25,15 +27,31 @@ export default function Benchmark() {
   ]
 
   const runBenchmark = async () => {
-    setIsRunning(true)
-    setProgress(0)
-
-    for (let i = 0; i <= 100; i += 10) {
-      await new Promise(resolve => setTimeout(resolve, 200))
-      setProgress(i)
+    if (!benchmark.loaded) {
+      alert('WASM 模块未加载，无法运行测试')
+      return
     }
 
-    setIsRunning(false)
+    setProgress(0)
+
+    try {
+      // Run MatMul benchmark
+      setProgress(25)
+      await benchmark.runMatMulBenchmark(1024, 10)
+
+      // Run ReLU benchmark
+      setProgress(50)
+      await benchmark.runReLUBenchmark(1000000, 100)
+
+      // Run Conv2D benchmark
+      setProgress(75)
+      await benchmark.runConv2DBenchmark(1, 64, 224, 5)
+
+      setProgress(100)
+    } catch (error) {
+      console.error('Benchmark failed:', error)
+      alert('测试失败: ' + (error as Error).message)
+    }
   }
 
   const getSpeedup = (tinyinfer: number, other: number) => {
@@ -65,14 +83,14 @@ export default function Benchmark() {
           </div>
           <button
             onClick={runBenchmark}
-            disabled={isRunning}
+            disabled={benchmark.running || !benchmark.loaded}
             className="bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 text-white px-6 py-3 rounded-lg font-semibold transition"
           >
-            {isRunning ? '运行中...' : '运行测试'}
+            {benchmark.running ? '运行中...' : benchmark.loaded ? '运行测试' : 'WASM 未加载'}
           </button>
         </div>
 
-        {isRunning && (
+        {benchmark.running && (
           <div className="mt-4">
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
               <div

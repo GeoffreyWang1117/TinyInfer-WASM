@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom'
+import { useWasm } from './hooks/useWasm'
 import Home from './pages/Home'
 import ImageClassification from './pages/ImageClassification'
 import TextEmbedding from './pages/TextEmbedding'
@@ -7,37 +7,7 @@ import ChatGeneration from './pages/ChatGeneration'
 import Benchmark from './pages/Benchmark'
 
 function App() {
-  const [wasmLoaded, setWasmLoaded] = useState(false)
-  const [simdSupported, setSimdSupported] = useState<boolean | null>(null)
-
-  useEffect(() => {
-    // Check SIMD support
-    const checkSIMD = async () => {
-      try {
-        const simd = await WebAssembly.validate(
-          new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11])
-        )
-        setSimdSupported(simd)
-      } catch {
-        setSimdSupported(false)
-      }
-    }
-
-    checkSIMD()
-
-    // Load WASM module
-    const loadWasm = async () => {
-      try {
-        // We'll implement the actual WASM loading later
-        // For now, just mark as loaded
-        setWasmLoaded(true)
-      } catch (error) {
-        console.error('Failed to load WASM:', error)
-      }
-    }
-
-    loadWasm()
-  }, [])
+  const wasm = useWasm()
 
   return (
     <Router>
@@ -55,19 +25,33 @@ function App() {
                 </p>
               </div>
               <div className="flex items-center space-x-4">
+                {wasm.error && (
+                  <div className="flex items-center space-x-2 text-red-500">
+                    <span className="text-sm">⚠️ {wasm.error}</span>
+                  </div>
+                )}
                 <div className="flex items-center space-x-2">
-                  <div className={`w-2 h-2 rounded-full ${wasmLoaded ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                  <div className={`w-2 h-2 rounded-full ${
+                    wasm.loaded ? 'bg-green-500' : wasm.loading ? 'bg-yellow-500' : 'bg-gray-500'
+                  }`}></div>
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    WASM: {wasmLoaded ? '已加载' : '加载中...'}
+                    WASM: {wasm.loaded ? '已加载' : wasm.loading ? '加载中...' : '未加载'}
                   </span>
                 </div>
-                {simdSupported !== null && (
+                {wasm.systemInfo && (
                   <div className="flex items-center space-x-2">
-                    <div className={`w-2 h-2 rounded-full ${simdSupported ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    <div className={`w-2 h-2 rounded-full ${
+                      wasm.systemInfo.simd_support ? 'bg-green-500' : 'bg-red-500'
+                    }`}></div>
                     <span className="text-sm text-gray-600 dark:text-gray-400">
-                      SIMD: {simdSupported ? '支持' : '不支持'}
+                      SIMD: {wasm.systemInfo.simd_support ? '支持' : '不支持'}
                     </span>
                   </div>
+                )}
+                {wasm.systemInfo && (
+                  <span className="text-xs text-gray-500 dark:text-gray-500">
+                    v{wasm.systemInfo.version}
+                  </span>
                 )}
                 <a
                   href="https://github.com/GeoffreyWang1117/TinyInfer-WASM"

@@ -3,11 +3,17 @@ mod tensor;
 mod ops;
 mod engine;
 mod error;
+mod api;
 
 use wasm_bindgen::prelude::*;
 
 #[cfg(feature = "console_error_panic_hook")]
 pub use console_error_panic_hook::set_once as set_panic_hook;
+
+// Re-export API types for WASM
+pub use api::*;
+pub use tensor::Tensor;
+pub use engine::Model;
 
 /// Initialize the WASM module
 #[wasm_bindgen(start)]
@@ -16,7 +22,7 @@ pub fn init() {
     console_error_panic_hook::set_once();
 
     wasm_logger::init(wasm_logger::Config::default());
-    log::info!("TinyInfer-WASM initialized");
+    log::info!("TinyInfer-WASM v{} initialized", env!("CARGO_PKG_VERSION"));
 }
 
 /// Get version information
@@ -37,6 +43,16 @@ pub fn check_simd_support() -> bool {
     {
         false
     }
+}
+
+/// Get system information
+#[wasm_bindgen]
+pub fn get_system_info() -> String {
+    serde_json::json!({
+        "version": env!("CARGO_PKG_VERSION"),
+        "simd_support": check_simd_support(),
+        "target": "wasm32-unknown-unknown",
+    }).to_string()
 }
 
 #[cfg(test)]
