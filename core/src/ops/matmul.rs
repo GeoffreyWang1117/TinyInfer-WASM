@@ -1,12 +1,14 @@
 use crate::error::{Result, TinyInferError};
 use crate::ops::Operator;
 use crate::tensor::{Shape, Tensor};
+use crate::simd;
 
 /// Matrix multiplication operator
 /// Supports 2D matrix multiplication and batched matrix multiplication
 pub struct MatMul {
     transpose_a: bool,
     transpose_b: bool,
+    use_simd: bool,
 }
 
 impl MatMul {
@@ -14,6 +16,7 @@ impl MatMul {
         Self {
             transpose_a: false,
             transpose_b: false,
+            use_simd: simd::is_simd_available(),
         }
     }
 
@@ -21,26 +24,13 @@ impl MatMul {
         Self {
             transpose_a,
             transpose_b,
+            use_simd: simd::is_simd_available(),
         }
     }
 
-    /// Basic 2D matrix multiplication: C = A @ B
-    /// A: [M, K], B: [K, N] -> C: [M, N]
-    fn matmul_2d(a: &[f32], b: &[f32], c: &mut [f32], m: usize, n: usize, k: usize) {
-        // Naive implementation - will be optimized later with SIMD and tiling
-        for i in 0..m {
-            for j in 0..n {
-                let mut sum = 0.0;
-                for p in 0..k {
-                    sum += a[i * k + p] * b[p * n + j];
-                }
-                c[i * n + j] = sum;
-            }
-        }
-    }
-
-    /// Optimized matrix multiplication with loop tiling (cache-friendly)
-    fn matmul_2d_tiled(
+    /// SIMD-optimized matrix multiplication with tiling
+    /// This version uses SIMD dot products for inner loops
+    fn matmul_2d_simd(
         a: &[f32],
         b: &[f32],
         c: &mut [f32],
@@ -53,7 +43,48 @@ impl MatMul {
         // Initialize output to zero
         c.fill(0.0);
 
-        // Tiled matrix multiplication
+        // Tiled matrix multiplication with SIMD
+        for i0 in (0..m).step_by(TILE_SIZE) {
+            for j0 in (0..n).step_by(TILE_SIZE) {
+                for p0 in (0..k).step_by(TILE_SIZE) {
+                    let i_end = (i0 + TILE_SIZE).min(m);
+                    let j_end = (j0 + TILE_SIZE).min(n);
+                    let p_end = (p0 + TILE_SIZE).min(k);
+
+                    for i in i0..i_end {
+                        // Get row from A
+                        let a_row = &a[i * k + p0..i * k + p_end];
+
+                        for j in j0..j_end {
+                            // Get column from B (note: B is row-major, so we need stride access)
+                            let mut b_col = Vec::with_capacity(p_end - p0);
+                            for p in p0..p_end {
+                                b_col.push(b[p * n + j]);
+                            }
+
+                            // SIMD dot product
+                            let dot = simd::simd_dot_f32(a_row, &b_col);
+                            c[i * n + j] += dot;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Standard tiled matrix multiplication (fallback)
+    fn matmul_2d_tiled(
+        a: &[f32],
+        b: &[f32],
+        c: &mut [f32],
+        m: usize,
+        n: usize,
+        k: usize,
+    ) {
+        const TILE_SIZE: usize = 32;
+
+        c.fill(0.0);
+
         for i0 in (0..m).step_by(TILE_SIZE) {
             for j0 in (0..n).step_by(TILE_SIZE) {
                 for p0 in (0..k).step_by(TILE_SIZE) {
@@ -101,7 +132,6 @@ impl Operator for MatMul {
         let a = inputs[0];
         let b = inputs[1];
 
-        // For now, only support 2D matrix multiplication
         if a.ndim() != 2 || b.ndim() != 2 {
             return Err(TinyInferError::UnsupportedOp(
                 "MatMul currently only supports 2D matrices".to_string(),
@@ -123,19 +153,23 @@ impl Operator for MatMul {
 
         let k = k_a;
 
-        // Create output tensor
         let output_shape = Shape::new(vec![m, n]);
         let mut output = Tensor::zeros(output_shape);
 
-        // Perform matrix multiplication
-        Self::matmul_2d_tiled(a.data(), b.data(), output.data_mut(), m, n, k);
+        // Use SIMD-optimized version if available
+        if self.use_simd {
+            log::debug!("Using SIMD-optimized MatMul");
+            Self::matmul_2d_simd(a.data(), b.data(), output.data_mut(), m, n, k);
+        } else {
+            log::debug!("Using standard tiled MatMul");
+            Self::matmul_2d_tiled(a.data(), b.data(), output.data_mut(), m, n, k);
+        }
 
         Ok(output)
     }
 }
 
 /// Gemm (General Matrix Multiplication): Y = alpha * A @ B + beta * C
-/// This is a common operation in neural networks
 pub struct Gemm {
     alpha: f32,
     beta: f32,
@@ -185,19 +219,24 @@ impl Operator for Gemm {
             )));
         }
 
-        // For simplicity, use MatMul and Add
-        // In a full implementation, this would be optimized as a single kernel
         let matmul = MatMul::new();
         let mut y = matmul.forward(&[inputs[0], inputs[1]])?;
 
-        // Apply alpha
+        // Apply alpha using SIMD if available
         if self.alpha != 1.0 {
-            for val in y.data_mut() {
-                *val *= self.alpha;
+            if simd::is_simd_available() {
+                let mut scaled = vec![0.0; y.size()];
+                simd::simd_scale_f32(y.data(), self.alpha, &mut scaled);
+                let new_y = Tensor::new(scaled, y.shape().clone());
+                y = new_y;
+            } else {
+                for val in y.data_mut() {
+                    *val *= self.alpha;
+                }
             }
         }
 
-        // Add beta * C
+        // Add beta * C using SIMD if available
         if self.beta != 0.0 {
             let c = inputs[2];
             if y.shape() != c.shape() {
@@ -206,8 +245,15 @@ impl Operator for Gemm {
                 ));
             }
 
-            for (out, &c_val) in y.data_mut().iter_mut().zip(c.data().iter()) {
-                *out += self.beta * c_val;
+            if simd::is_simd_available() && self.beta == 1.0 {
+                // Simple addition
+                let mut result = vec![0.0; y.size()];
+                simd::simd_add_f32(y.data(), c.data(), &mut result);
+                y = Tensor::new(result, y.shape().clone());
+            } else {
+                for (out, &c_val) in y.data_mut().iter_mut().zip(c.data().iter()) {
+                    *out += self.beta * c_val;
+                }
             }
         }
 
@@ -230,7 +276,6 @@ mod tests {
         let matmul = MatMul::new();
         let c = matmul.forward(&[&a, &b]).unwrap();
 
-        // Expected: [[19, 22], [43, 50]]
         assert_eq!(c.data()[0], 19.0);
         assert_eq!(c.data()[1], 22.0);
         assert_eq!(c.data()[2], 43.0);
@@ -249,8 +294,6 @@ mod tests {
         let c = matmul.forward(&[&a, &b]).unwrap();
 
         assert_eq!(c.shape().dims(), &[2, 2]);
-
-        // Expected: [[22, 28], [49, 64]]
         assert_eq!(c.data()[0], 22.0);
         assert_eq!(c.data()[1], 28.0);
         assert_eq!(c.data()[2], 49.0);
@@ -266,10 +309,6 @@ mod tests {
         let gemm = Gemm::new(2.0, 0.5);
         let y = gemm.forward(&[&a, &b, &c]).unwrap();
 
-        // Y = 2 * (A @ B) + 0.5 * C
-        // A @ B = [[1, 2], [3, 4]]
-        // Y = 2 * [[1, 2], [3, 4]] + 0.5 * [[1, 1], [1, 1]]
-        //   = [[2.5, 4.5], [6.5, 8.5]]
         assert_eq!(y.data()[0], 2.5);
         assert_eq!(y.data()[1], 4.5);
         assert_eq!(y.data()[2], 6.5);

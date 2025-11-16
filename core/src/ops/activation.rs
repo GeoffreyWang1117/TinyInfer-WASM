@@ -1,6 +1,7 @@
 use crate::error::{Result, TinyInferError};
 use crate::ops::Operator;
 use crate::tensor::Tensor;
+use crate::simd;
 
 /// ReLU activation function
 pub struct ReLU;
@@ -36,14 +37,18 @@ impl Operator for ReLU {
         }
 
         let input = inputs[0];
-        let mut output = input.clone_tensor();
 
-        // Apply ReLU in-place
-        for val in output.data_mut() {
-            *val = val.max(0.0);
+        // Use SIMD-optimized ReLU
+        let mut output_data = vec![0.0; input.size()];
+        if simd::is_simd_available() {
+            simd::simd_relu_f32(input.data(), &mut output_data);
+        } else {
+            for i in 0..input.size() {
+                output_data[i] = input.data()[i].max(0.0);
+            }
         }
 
-        Ok(output)
+        Ok(Tensor::new(output_data, input.shape().clone()))
     }
 }
 

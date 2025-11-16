@@ -214,19 +214,19 @@ mod tests {
     #[test]
     fn test_load_test_model() {
         let mut tinyinfer = TinyInfer::new();
-        assert!(tinyinfer.load_test_model().is_ok());
+        tinyinfer.load_test_model();
         assert!(tinyinfer.model.is_initialized());
     }
 
     #[test]
     fn test_inference() {
         let mut tinyinfer = TinyInfer::new();
-        tinyinfer.load_test_model().unwrap();
+        tinyinfer.load_test_model();
 
         let input_data = vec![-1.0, 2.0, -3.0, 4.0];
         let input_shape = vec![4];
 
-        let output = tinyinfer.infer(input_data, input_shape).unwrap();
+        let output = tinyinfer.infer(input_data, input_shape);
         assert_eq!(output, vec![0.0, 2.0, 0.0, 4.0]); // ReLU applied
     }
 }

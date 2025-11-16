@@ -1,6 +1,7 @@
 use crate::error::{Result, TinyInferError};
 use crate::ops::Operator;
 use crate::tensor::Tensor;
+use crate::simd;
 
 /// Element-wise addition
 pub struct Add;
@@ -45,15 +46,17 @@ impl Operator for Add {
             ));
         }
 
-        let mut output = a.clone_tensor();
-        let output_data = output.data_mut();
-        let b_data = b.data();
-
-        for (out, &b_val) in output_data.iter_mut().zip(b_data.iter()) {
-            *out += b_val;
+        // Use SIMD-optimized addition
+        let mut output_data = vec![0.0; a.size()];
+        if simd::is_simd_available() {
+            simd::simd_add_f32(a.data(), b.data(), &mut output_data);
+        } else {
+            for i in 0..a.size() {
+                output_data[i] = a.data()[i] + b.data()[i];
+            }
         }
 
-        Ok(output)
+        Ok(Tensor::new(output_data, a.shape().clone()))
     }
 }
 
@@ -98,15 +101,17 @@ impl Operator for Sub {
             ));
         }
 
-        let mut output = a.clone_tensor();
-        let output_data = output.data_mut();
-        let b_data = b.data();
-
-        for (out, &b_val) in output_data.iter_mut().zip(b_data.iter()) {
-            *out -= b_val;
+        // Use SIMD-optimized subtraction
+        let mut output_data = vec![0.0; a.size()];
+        if simd::is_simd_available() {
+            simd::simd_sub_f32(a.data(), b.data(), &mut output_data);
+        } else {
+            for i in 0..a.size() {
+                output_data[i] = a.data()[i] - b.data()[i];
+            }
         }
 
-        Ok(output)
+        Ok(Tensor::new(output_data, a.shape().clone()))
     }
 }
 
@@ -151,15 +156,17 @@ impl Operator for Mul {
             ));
         }
 
-        let mut output = a.clone_tensor();
-        let output_data = output.data_mut();
-        let b_data = b.data();
-
-        for (out, &b_val) in output_data.iter_mut().zip(b_data.iter()) {
-            *out *= b_val;
+        // Use SIMD-optimized multiplication
+        let mut output_data = vec![0.0; a.size()];
+        if simd::is_simd_available() {
+            simd::simd_mul_f32(a.data(), b.data(), &mut output_data);
+        } else {
+            for i in 0..a.size() {
+                output_data[i] = a.data()[i] * b.data()[i];
+            }
         }
 
-        Ok(output)
+        Ok(Tensor::new(output_data, a.shape().clone()))
     }
 }
 
@@ -204,15 +211,17 @@ impl Operator for Div {
             ));
         }
 
-        let mut output = a.clone_tensor();
-        let output_data = output.data_mut();
-        let b_data = b.data();
-
-        for (out, &b_val) in output_data.iter_mut().zip(b_data.iter()) {
-            *out /= b_val;
+        // Use SIMD-optimized division
+        let mut output_data = vec![0.0; a.size()];
+        if simd::is_simd_available() {
+            simd::simd_div_f32(a.data(), b.data(), &mut output_data);
+        } else {
+            for i in 0..a.size() {
+                output_data[i] = a.data()[i] / b.data()[i];
+            }
         }
 
-        Ok(output)
+        Ok(Tensor::new(output_data, a.shape().clone()))
     }
 }
 

@@ -4,6 +4,7 @@ mod activation;
 mod pool;
 mod norm;
 mod elementwise;
+mod fused;
 
 pub use matmul::*;
 pub use conv::*;
@@ -11,6 +12,7 @@ pub use activation::*;
 pub use pool::*;
 pub use norm::*;
 pub use elementwise::*;
+pub use fused::*;
 
 use crate::tensor::Tensor;
 use crate::error::Result;

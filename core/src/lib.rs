@@ -4,6 +4,8 @@ mod ops;
 mod engine;
 mod error;
 mod api;
+mod simd;
+mod memory;
 
 use wasm_bindgen::prelude::*;
 
