@@ -90,6 +90,28 @@ console.log('输出:', output); // [0, 2, 0, 4] - ReLU 应用后
 
 详细构建说明请查看 [BUILD.md](BUILD.md)。
 
+## 📚 文档
+
+### 入门文档
+- **[快速开始](QUICKSTART.md)** - 5 分钟快速上手指南
+- **[构建指南](BUILD.md)** - 详细的构建和测试说明
+- **[架构设计](ARCHITECTURE.md)** - 系统架构和设计理念
+
+### 开发文档
+- **[API 参考](docs/API.md)** - 完整的 JavaScript 和 Rust API 文档
+- **[算子文档](docs/OPERATORS.md)** - 所有算子的详细说明和使用示例
+- **[工具文档](docs/TOOLS.md)** - 性能分析和张量工具库
+
+### 优化和部署
+- **[性能优化指南](docs/PERFORMANCE.md)** - 编译、算子和应用层优化
+- **[部署指南](docs/DEPLOYMENT.md)** - 生产环境部署最佳实践
+
+### 其他
+- **[FAQ](docs/FAQ.md)** - 常见问题解答
+- **[CHANGELOG](CHANGELOG.md)** - 版本更新日志
+- **[贡献指南](CONTRIBUTING.md)** - 如何为项目做出贡献
+- **[示例代码](examples/README.md)** - 使用示例和最佳实践
+
 ## 应用场景
 
 ### 图像分类 🖼️
@@ -155,11 +177,19 @@ TinyInfer-WASM/
   - [x] 端到端测试页面
   - [x] 单元测试 (49/52 通过)
 
-- [ ] **Phase 5: 生产优化**
+- [x] **Phase 5: 生产工具和文档** ✅
+  - [x] 自动化构建脚本 (build.sh)
+  - [x] CI/CD 流程 (GitHub Actions)
+  - [x] 性能分析工具库
+  - [x] 张量工具库 (30+ 函数)
+  - [x] 完整文档体系 (8 个文档)
+  - [x] 示例代码和最佳实践
+
+- [ ] **Phase 6: 高级功能**
   - [ ] ONNX 模型加载器
-  - [ ] 性能基准对比 (vs ONNX.js, TF.js)
   - [ ] Web Workers 并行化
-  - [ ] 完整文档和部署指南
+  - [ ] 模型量化支持
+  - [ ] 更多 Transformer 算子
 
 ## 📊 当前状态
 
