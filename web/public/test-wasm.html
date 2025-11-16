@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TinyInfer-WASM Test</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #333;
+      border-bottom: 3px solid #4CAF50;
+      padding-bottom: 10px;
+    }
+    button {
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background: #45a049;
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+    .result {
+      background: #f9f9f9;
+      padding: 15px;
+      margin: 10px 0;
+      border-left: 4px solid #4CAF50;
+      font-family: monospace;
+    }
+    .error {
+      background: #ffebee;
+      border-left-color: #f44336;
+      color: #c62828;
+    }
+    .success {
+      background: #e8f5e9;
+      border-left-color: #4CAF50;
+      color: #2e7d32;
+    }
+    pre {
+      background: #263238;
+      color: #aed581;
+      padding: 15px;
+      border-radius: 4px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚀 TinyInfer-WASM Integration Test</h1>
+
+    <div>
+      <h2>System Status</h2>
+      <div id="status" class="result">Loading...</div>
+    </div>
+
+    <div>
+      <h2>Tests</h2>
+      <button onclick="testVersion()">Test Version</button>
+      <button onclick="testSimdSupport()">Test SIMD Support</button>
+      <button onclick="testInference()">Test Inference</button>
+      <button onclick="testBenchmark()">Test Benchmark</button>
+      <button onclick="runAllTests()">Run All Tests</button>
+    </div>
+
+    <div>
+      <h2>Results</h2>
+      <div id="results"></div>
+    </div>
+  </div>
+
+  <script type="module">
+    import init, {
+      TinyInfer,
+      Benchmark,
+      version,
+      check_simd_support,
+      get_system_info
+    } from './wasm/tinyinfer_core.js';
+
+    let wasmInitialized = false;
+
+    // Initialize WASM on page load
+    async function initWasm() {
+      const statusDiv = document.getElementById('status');
+      try {
+        statusDiv.innerHTML = '⏳ Initializing WASM module...';
+        await init();
+        wasmInitialized = true;
+
+        const info = JSON.parse(get_system_info());
+        statusDiv.className = 'result success';
+        statusDiv.innerHTML = `
+          ✅ WASM Initialized Successfully<br>
+          📦 Version: ${version()}<br>
+          🚀 SIMD Support: ${check_simd_support() ? 'Yes' : 'No'}<br>
+          🎯 Target: ${info.target}
+        `;
+      } catch (error) {
+        statusDiv.className = 'result error';
+        statusDiv.innerHTML = `❌ Failed to initialize WASM: ${error.message}`;
+        console.error('WASM initialization error:', error);
+      }
+    }
+
+    function addResult(content, isError = false) {
+      const resultsDiv = document.getElementById('results');
+      const resultDiv = document.createElement('div');
+      resultDiv.className = 'result ' + (isError ? 'error' : 'success');
+      resultDiv.innerHTML = content;
+      resultsDiv.appendChild(resultDiv);
+    }
+
+    window.testVersion = function() {
+      try {
+        const v = version();
+        addResult(`✅ Version: ${v}`);
+      } catch (error) {
+        addResult(`❌ Version test failed: ${error.message}`, true);
+      }
+    };
+
+    window.testSimdSupport = function() {
+      try {
+        const simd = check_simd_support();
+        addResult(`✅ SIMD Support: ${simd ? 'Enabled ⚡' : 'Disabled'}`);
+      } catch (error) {
+        addResult(`❌ SIMD test failed: ${error.message}`, true);
+      }
+    };
+
+    window.testInference = function() {
+      try {
+        const engine = new TinyInfer();
+        engine.loadTestModel();
+
+        const input = [-1.0, 2.0, -3.0, 4.0];
+        const shape = [4];
+
+        const output = engine.infer(input, shape);
+
+        addResult(`
+          ✅ Inference Test Passed<br>
+          Input: [${input.join(', ')}]<br>
+          Output: [${output.join(', ')}]<br>
+          Expected: [0, 2, 0, 4] (ReLU applied)<br>
+          Model Info: ${engine.getModelInfo()}
+        `);
+
+        engine.free();
+      } catch (error) {
+        addResult(`❌ Inference test failed: ${error.message}`, true);
+        console.error(error);
+      }
+    };
+
+    window.testBenchmark = function() {
+      try {
+        const bench = new Benchmark();
+
+        const matmulTime = bench.benchmarkMatMul(512, 10);
+        const reluTime = bench.benchmarkReLU(100000, 100);
+
+        addResult(`
+          ✅ Benchmark Test Passed<br>
+          MatMul (512x512, 10 iterations): ${matmulTime.toFixed(2)}ms<br>
+          ReLU (100K elements, 100 iterations): ${reluTime.toFixed(2)}ms
+        `);
+
+        bench.free();
+      } catch (error) {
+        addResult(`❌ Benchmark test failed: ${error.message}`, true);
+        console.error(error);
+      }
+    };
+
+    window.runAllTests = function() {
+      document.getElementById('results').innerHTML = '';
+      addResult('🔄 Running all tests...');
+
+      setTimeout(() => {
+        testVersion();
+        testSimdSupport();
+        testInference();
+        testBenchmark();
+        addResult('✅ All tests completed!');
+      }, 100);
+    };
+
+    // Initialize on load
+    initWasm();
+  </script>
+</body>
+</html>

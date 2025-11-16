@@ -1,0 +1,36 @@
+/* tslint:disable */
+/* eslint-disable */
+export const memory: WebAssembly.Memory;
+export const __wbg_benchmark_free: (a: number, b: number) => void;
+export const __wbg_model_free: (a: number, b: number) => void;
+export const __wbg_tensor_free: (a: number, b: number) => void;
+export const __wbg_tinyinfer_free: (a: number, b: number) => void;
+export const benchmark_benchmarkConv2D: (a: number, b: number, c: number, d: number, e: number) => number;
+export const benchmark_benchmarkMatMul: (a: number, b: number, c: number) => number;
+export const benchmark_benchmarkReLU: (a: number, b: number, c: number) => number;
+export const benchmark_clearResults: (a: number) => void;
+export const benchmark_getResults: (a: number, b: number) => void;
+export const benchmark_new: () => number;
+export const check_simd_support: () => number;
+export const createTensor: (a: number, b: number, c: number, d: number) => number;
+export const get_system_info: (a: number) => void;
+export const init: () => void;
+export const model_getInfo: (a: number, b: number) => void;
+export const model_isInitialized: (a: number) => number;
+export const model_new_js: () => number;
+export const tensor_getData: (a: number, b: number) => void;
+export const tensor_getShape: (a: number, b: number) => void;
+export const tensor_getSize: (a: number) => number;
+export const tensor_toString: (a: number, b: number) => void;
+export const tinyinfer_getModelInfo: (a: number, b: number) => void;
+export const tinyinfer_infer: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+export const tinyinfer_loadTestModel: (a: number) => void;
+export const tinyinfer_new: () => number;
+export const version: (a: number) => void;
+export const tensor_new_from_js: (a: number, b: number, c: number, d: number) => number;
+export const now: () => number;
+export const __wbindgen_export: (a: number, b: number, c: number) => void;
+export const __wbindgen_export2: (a: number, b: number) => number;
+export const __wbindgen_export3: (a: number, b: number, c: number, d: number) => number;
+export const __wbindgen_add_to_stack_pointer: (a: number) => number;
+export const __wbindgen_start: () => void;

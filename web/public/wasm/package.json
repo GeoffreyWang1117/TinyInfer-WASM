@@ -1,0 +1,24 @@
+{
+  "name": "tinyinfer-core",
+  "type": "module",
+  "collaborators": [
+    "TinyInfer Contributors"
+  ],
+  "description": "Lightweight neural network inference engine for WebAssembly",
+  "version": "0.1.0",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GeoffreyWang1117/TinyInfer-WASM"
+  },
+  "files": [
+    "tinyinfer_core_bg.wasm",
+    "tinyinfer_core.js",
+    "tinyinfer_core.d.ts"
+  ],
+  "main": "tinyinfer_core.js",
+  "types": "tinyinfer_core.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

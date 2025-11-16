@@ -49,4 +49,4 @@ strip = true
 # WASM SIMD will be used via core::arch::wasm32
 
 [package.metadata.wasm-pack.profile.release]
-wasm-opt = ["-Oz", "--enable-simd"]
+wasm-opt = false
