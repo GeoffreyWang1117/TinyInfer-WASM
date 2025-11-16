@@ -5,6 +5,7 @@ import ImageClassification from './pages/ImageClassification'
 import TextEmbedding from './pages/TextEmbedding'
 import ChatGeneration from './pages/ChatGeneration'
 import Benchmark from './pages/Benchmark'
+import PerformanceComparison from './pages/PerformanceComparison'
 
 function App() {
   const wasm = useWasm()
@@ -102,6 +103,12 @@ function App() {
               >
                 性能测试
               </Link>
+              <Link
+                to="/comparison"
+                className="border-b-2 border-transparent hover:border-blue-500 px-1 py-4 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                性能对比
+              </Link>
             </div>
           </div>
         </nav>
@@ -114,6 +121,7 @@ function App() {
             <Route path="/text-embedding" element={<TextEmbedding />} />
             <Route path="/chat" element={<ChatGeneration />} />
             <Route path="/benchmark" element={<Benchmark />} />
+            <Route path="/comparison" element={<PerformanceComparison />} />
           </Routes>
         </main>
 
