@@ -17,6 +17,7 @@ TinyInfer-WASM 是一个高性能的 WebAssembly 推理引擎，专为在浏览�
 - ✅ **轻量级**：WASM 二进制 < 1MB
 - ✅ **易使用**：简洁的 JavaScript API
 - 🆕 **浏览器 ONNX 加载**：零依赖直接加载 ONNX 模型，自动缓存
+- 🔥 **Transformer 支持**：Multi-Head Attention, LayerNorm, GELU, Embedding
 
 ## 技术栈
 
@@ -151,7 +152,8 @@ await loadModelFromURL(engine, '/models/model.json');
 ### 开发文档
 - **[API 参考](docs/API.md)** - 完整的 JavaScript 和 Rust API 文档
 - **[算子文档](docs/OPERATORS.md)** - 所有算子的详细说明和使用示例
-- **[模型加载指南](docs/MODEL_LOADING.md)** - 如何加载真实模型（支持 ONNX 转换）⭐ 新增
+- **[模型加载指南](docs/MODEL_LOADING.md)** - 如何加载真实模型（支持 ONNX 转换）
+- **[Transformer 支持](docs/PHASE7_TRANSFORMER_SUPPORT.md)** - Transformer 模型完整指南 🔥 新增
 - **[工具文档](docs/TOOLS.md)** - 性能分析和张量工具库
 
 ### 优化和部署
@@ -171,6 +173,12 @@ await loadModelFromURL(engine, '/models/model.json');
 
 ### 文本嵌入 📝
 使用 MiniLM 生成文本嵌入向量
+
+### Transformer 模型 🔥
+- **文本分类**：情感分析、主题分类
+- **序列标注**：命名实体识别 (NER)
+- **文本生成**：简单对话生成
+- **特征提取**：使用 BERT 类模型提取文本特征
 
 ### 对话生成 💬
 使用轻量级 LLM 进行对话生成

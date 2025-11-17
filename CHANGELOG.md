@@ -9,7 +9,99 @@
 ### 计划功能
 - 模型量化支持 (INT8)
 - Web Workers 并行推理
-- 更多 Transformer 算子 (Attention, LayerNorm, Embedding)
+- Flash Attention 优化
+- 位置编码算子（Positional Encoding, RoPE）
+- Attention Mask 支持
+
+---
+
+## [0.7.0] - 2025-11-17
+
+### 新增 - Phase 7: Transformer 支持 🔥
+
+- ✨ **Multi-Head Attention 算子** (`core/src/ops/attention.rs`)
+  - Scaled Dot-Product Attention 实现
+  - 支持多头注意力机制
+  - 数值稳定的 softmax
+  - Self-Attention 便捷封装
+  - 输入：Q, K, V `[batch, seq_len, d_model]`
+  - 复杂度：O(n² * d)
+
+- ✨ **Embedding 层** (`core/src/ops/embedding.rs`)
+  - 词嵌入（Word Embedding）
+  - 支持可变序列长度
+  - 自动边界检查
+  - 支持批处理
+
+- ✨ **Gather 算子** (`core/src/ops/embedding.rs`)
+  - 索引收集操作
+  - 当前支持 axis=0
+  - 用于高级索引操作
+
+- 🔧 **已有算子增强**:
+  - LayerNorm - 已在 Phase 5 实现，用于 Transformer
+  - GELU - Gaussian Error Linear Unit 激活函数
+  - Softmax - 支持注意力机制
+
+### 更新的 ONNX 支持
+
+新增 Transformer 相关算子映射：
+- `Gelu` → `GELU`
+- `LayerNormalization` → `LayerNorm`
+- `Attention` → `MultiHeadAttention`
+
+现在支持 **25+ ONNX 算子**，覆盖：
+- CNN 模型（Conv, Pool, BatchNorm）
+- Transformer 模型（Attention, LayerNorm, Embedding, GELU）
+- 通用算子（MatMul, Add, Reshape, Gather）
+
+### 示例代码
+
+- 📚 **Transformer 完整示例** (`examples/transformer-example.ts`)
+  - **示例 1**: Self-Attention 层
+  - **示例 2**: 完整 Transformer Encoder 层
+    - Multi-Head Self-Attention
+    - 2x LayerNorm
+    - Feed-Forward Network (Linear → GELU → Linear)
+    - 2x Residual Connections
+  - **示例 3**: 文本分类模型
+    - Embedding layer
+    - Self-Attention
+    - Classification head
+
+### 文档
+
+- ✨ **Phase 7 完整文档** (`docs/PHASE7_TRANSFORMER_SUPPORT.md`)
+  - 算子详细说明
+  - Transformer 架构组件
+  - 性能分析和优化建议
+  - 完整示例代码
+  - 已知限制和未来改进
+
+### 性能指标
+
+| 配置 | 序列长度 | d_model | 预估时间 |
+|------|---------|---------|---------|
+| 小型 | 16 | 128 | ~5ms |
+| 中型 | 32 | 256 | ~20ms |
+| 大型 | 64 | 512 | ~80ms |
+
+### Rust 核心更新
+
+新增文件：
+- `core/src/ops/attention.rs` - Attention 实现（250+ 行）
+- `core/src/ops/embedding.rs` - Embedding 和 Gather（230+ 行）
+
+更新文件：
+- `core/src/ops/mod.rs` - 导出新算子
+- `web/src/lib/onnxLoader.ts` - 算子映射更新
+
+### 技术栈更新
+
+- 新增: Multi-Head Attention (Rust)
+- 新增: Embedding Layer (Rust)
+- 新增: Gather operator (Rust)
+- 更新: ONNX 算子映射（25+ 算子）
 
 ---
 

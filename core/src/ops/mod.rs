@@ -5,6 +5,8 @@ mod pool;
 mod norm;
 mod elementwise;
 mod fused;
+mod attention;
+mod embedding;
 
 pub use matmul::*;
 pub use conv::*;
@@ -13,6 +15,8 @@ pub use pool::*;
 pub use norm::*;
 pub use elementwise::*;
 pub use fused::*;
+pub use attention::*;
+pub use embedding::*;
 
 use crate::tensor::Tensor;
 use crate::error::Result;

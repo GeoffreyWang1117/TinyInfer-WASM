@@ -8,26 +8,45 @@ import protobuf from 'protobufjs'
 
 // Operator type mapping from ONNX to TinyInfer
 const OP_TYPE_MAP: Record<string, string> = {
+  // Activation functions
   Relu: 'ReLU',
   Sigmoid: 'Sigmoid',
   Tanh: 'Tanh',
+  Gelu: 'GELU',
   Softmax: 'Softmax',
+
+  // Matrix operations
   MatMul: 'MatMul',
   Gemm: 'Gemm',
+
+  // Convolution and pooling
   Conv: 'Conv2D',
   MaxPool: 'MaxPool2D',
   AveragePool: 'AvgPool2D',
   GlobalAveragePool: 'GlobalAvgPool2D',
+
+  // Normalization
   BatchNormalization: 'BatchNorm2D',
+  LayerNormalization: 'LayerNorm',
+
+  // Element-wise operations
   Add: 'Add',
   Sub: 'Sub',
   Mul: 'Mul',
   Div: 'Div',
+
+  // Shape operations
   Transpose: 'Transpose',
   Reshape: 'Reshape',
   Concat: 'Concat',
   Split: 'Split',
+
+  // Indexing operations
   Gather: 'Gather',
+
+  // Transformer components
+  Attention: 'MultiHeadAttention',
+  'Multi-head attention': 'MultiHeadAttention',
 }
 
 // TinyInfer model definition interfaces
