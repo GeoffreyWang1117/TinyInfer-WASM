@@ -18,6 +18,7 @@ TinyInfer-WASM 是一个高性能的 WebAssembly 推理引擎，专为在浏览�
 - ✅ **易使用**：简洁的 JavaScript API
 - 🆕 **浏览器 ONNX 加载**：零依赖直接加载 ONNX 模型，自动缓存
 - 🔥 **Transformer 支持**：Multi-Head Attention, LayerNorm, GELU, Embedding
+- ⚡ **性能优化**：Web Workers, INT8 量化, Attention Mask, 位置编码
 
 ## 技术栈
 
@@ -153,7 +154,8 @@ await loadModelFromURL(engine, '/models/model.json');
 - **[API 参考](docs/API.md)** - 完整的 JavaScript 和 Rust API 文档
 - **[算子文档](docs/OPERATORS.md)** - 所有算子的详细说明和使用示例
 - **[模型加载指南](docs/MODEL_LOADING.md)** - 如何加载真实模型（支持 ONNX 转换）
-- **[Transformer 支持](docs/PHASE7_TRANSFORMER_SUPPORT.md)** - Transformer 模型完整指南 🔥 新增
+- **[Transformer 支持](docs/PHASE7_TRANSFORMER_SUPPORT.md)** - Transformer 模型完整指南
+- **[性能优化](docs/PHASE8_PERFORMANCE_OPT.md)** - Web Workers, 量化, Attention Mask ⚡ 新增
 - **[工具文档](docs/TOOLS.md)** - 性能分析和张量工具库
 
 ### 优化和部署

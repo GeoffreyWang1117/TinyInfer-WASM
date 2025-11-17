@@ -47,12 +47,14 @@ impl MultiHeadAttention {
     /// Q: [batch, seq_len, head_dim]
     /// K: [batch, seq_len, head_dim]
     /// V: [batch, seq_len, head_dim]
+    /// mask: optional [batch, seq_len, seq_len] or [seq_len, seq_len]
     /// Returns: [batch, seq_len, head_dim]
     fn scaled_dot_product_attention(
         &self,
         q: &[f32],
         k: &[f32],
         v: &[f32],
+        mask: Option<&[f32]>,
         batch: usize,
         seq_len: usize,
         head_dim: usize,
@@ -76,6 +78,24 @@ impl MultiHeadAttention {
                     }
 
                     scores[i * seq_len + j] = score * scale;
+                }
+            }
+
+            // Apply mask if provided
+            if let Some(mask_data) = mask {
+                for i in 0..seq_len {
+                    for j in 0..seq_len {
+                        // Try batch-specific mask first, fallback to shared mask
+                        let mask_idx = if mask_data.len() == batch * seq_len * seq_len {
+                            (b * seq_len + i) * seq_len + j
+                        } else {
+                            i * seq_len + j
+                        };
+
+                        if mask_idx < mask_data.len() && mask_data[mask_idx] == 0.0 {
+                            scores[i * seq_len + j] = f32::NEG_INFINITY;
+                        }
+                    }
                 }
             }
 
@@ -173,6 +193,13 @@ impl Operator for MultiHeadAttention {
             )));
         }
 
+        // Get optional mask
+        let mask = if inputs.len() == 4 {
+            Some(inputs[3].data())
+        } else {
+            None
+        };
+
         // For simplicity, we'll implement attention without explicit head splitting
         // In a full implementation, we'd reshape to [batch, num_heads, seq_len, head_dim]
         // and process each head independently.
@@ -184,6 +211,7 @@ impl Operator for MultiHeadAttention {
             q.data(),
             k.data(),
             v.data(),
+            mask,
             batch,
             seq_len,
             d_model,
@@ -220,15 +248,22 @@ impl Operator for SelfAttention {
     }
 
     fn forward(&self, inputs: &[&Tensor]) -> Result<Tensor> {
-        if inputs.len() != 1 {
+        if inputs.len() != 1 && inputs.len() != 2 {
             return Err(TinyInferError::UnsupportedOp(format!(
-                "SelfAttention expects 1 input, got {}",
+                "SelfAttention expects 1 or 2 inputs (x, [mask]), got {}",
                 inputs.len()
             )));
         }
 
         let x = inputs[0];
-        self.mha.forward(&[x, x, x])
+
+        // Forward with optional mask
+        if inputs.len() == 2 {
+            let mask = inputs[1];
+            self.mha.forward(&[x, x, x, mask])
+        } else {
+            self.mha.forward(&[x, x, x])
+        }
     }
 }
 

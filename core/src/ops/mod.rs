@@ -7,6 +7,7 @@ mod elementwise;
 mod fused;
 mod attention;
 mod embedding;
+mod positional;
 
 pub use matmul::*;
 pub use conv::*;
@@ -17,6 +18,7 @@ pub use elementwise::*;
 pub use fused::*;
 pub use attention::*;
 pub use embedding::*;
+pub use positional::*;
 
 use crate::tensor::Tensor;
 use crate::error::Result;

@@ -47,6 +47,12 @@ const OP_TYPE_MAP: Record<string, string> = {
   // Transformer components
   Attention: 'MultiHeadAttention',
   'Multi-head attention': 'MultiHeadAttention',
+
+  // Positional encoding
+  PositionalEncoding: 'PositionalEncoding',
+  PositionalEmbedding: 'PositionalEmbedding',
+  RotaryEmbedding: 'RotaryPositionEmbedding',
+  RoPE: 'RotaryPositionEmbedding',
 }
 
 // TinyInfer model definition interfaces
