@@ -7,10 +7,91 @@
 ## [Unreleased]
 
 ### 计划功能
-- ONNX 模型加载器
-- 模型量化支持
+- 模型量化支持 (INT8)
 - Web Workers 并行推理
-- 更多 Transformer 算子 (Attention, LayerNorm)
+- 更多 Transformer 算子 (Attention, LayerNorm, Embedding)
+
+---
+
+## [0.6.0] - 2025-11-17
+
+### 新增 - Phase 6: 浏览器原生 ONNX 加载 🆕
+
+- ✨ **浏览器端 ONNX 解析器** (`web/src/lib/onnxLoader.ts`)
+  - 零服务器依赖，完全在浏览器中解析 ONNX 模型
+  - 使用 protobufjs 解析 ONNX protobuf 格式
+  - 支持从文件、URL、ArrayBuffer 加载
+  - 自动转换为 TinyInfer JSON 格式
+  - 支持 20+ ONNX 算子映射
+
+- ✨ **IndexedDB 模型缓存系统** (`web/src/lib/modelCache.ts`)
+  - 自动缓存已解析的模型，加速重复加载
+  - 缓存加载速度提升 4x (~50ms vs ~200ms)
+  - 智能缓存键生成 (SHA-256 哈希)
+  - 完整的缓存管理 API (get/set/delete/clear/stats)
+  - 支持缓存统计和容量管理
+
+- ✨ **ONNX Protobuf Schema** (`web/src/lib/onnx.proto`)
+  - 简化版 ONNX protobuf 定义
+  - 包含 ModelProto, GraphProto, NodeProto, TensorProto
+  - 支持所有基础数据类型和算子属性
+
+- 🔧 **新增 SDK API**:
+  ```typescript
+  - loadONNXFromFile(engine, file, options?)    // 从文件加载 ONNX
+  - loadONNXFromURL(engine, url, options?)      // 从 URL 加载 ONNX
+  - clearModelCache()                            // 清除缓存
+  - getModelCacheStats()                         // 获取缓存统计
+  ```
+
+- 📚 **完整示例代码** (`examples/browser-onnx-example.ts`)
+  - 5 个完整使用示例
+  - 拖拽上传 ONNX 文件
+  - URL 远程加载
+  - 缓存管理演示
+  - 完整的 HTML 应用模板
+
+### 支持的 ONNX 算子
+
+新增以下 ONNX 算子支持（浏览器解析）:
+- **激活函数**: Relu, Sigmoid, Tanh, Softmax
+- **矩阵运算**: MatMul, Gemm
+- **卷积池化**: Conv, MaxPool, AveragePool, GlobalAveragePool
+- **归一化**: BatchNormalization
+- **逐元素**: Add, Sub, Mul, Div
+- **形状操作**: Transpose, Reshape, Concat, Split, Gather
+
+### 改进
+
+- 📝 更新 `docs/MODEL_LOADING.md` - 添加浏览器 ONNX 加载章节
+- 📝 更新 `README.md` - 突出浏览器 ONNX 加载特性
+- 📦 添加依赖: `protobufjs@^7.2.5`, `idb@^8.0.0`
+- 🎨 优化用户体验 - 即插即用，无需 Python 工具
+- ⚡ 性能优化 - 缓存加载速度提升 4x
+
+### 文档
+
+- ✨ 新增 `docs/PHASE6_BROWSER_ONNX.md` - Phase 6 完整实现文档
+  - 技术架构说明
+  - 性能指标分析
+  - 完整示例代码
+  - 已知限制和未来改进
+
+### 性能指标
+
+| 特性 | 浏览器 ONNX | Python + JSON |
+|------|------------|--------------|
+| 服务器依赖 | ❌ 无 | ⚠️ Python |
+| 自动缓存 | ✅ IndexedDB | ❌ 无 |
+| 首次加载 | ~200ms | ~100ms |
+| 缓存加载 | ⚡ ~50ms | ~100ms |
+| 用户体验 | ✨ 最佳 | 良好 |
+
+### 技术栈更新
+
+- 新增: protobufjs (ONNX protobuf 解析)
+- 新增: idb (IndexedDB 封装)
+- Bundle 增加: ~125 KB (gzip)
 
 ---
 

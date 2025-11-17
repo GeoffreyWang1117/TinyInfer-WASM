@@ -342,6 +342,143 @@ function createMockWasm(): WasmModule {
   };
 }
 
+// ============================================================================
+// ONNX Loading with Caching Support
+// ============================================================================
+
+import {
+  loadONNXFromFile as onnxLoadFromFile,
+  loadONNXFromURL as onnxLoadFromURL,
+  type ModelDef,
+} from './onnxLoader'
+
+import {
+  getCachedModel,
+  cacheModel,
+  clearModelCache as clearCache,
+  getModelCacheStats as getCacheStats,
+  generateCacheKeyFromFile,
+  generateCacheKeyFromURL,
+} from './modelCache'
+
+/**
+ * Load ONNX model from File with caching
+ * Automatically caches parsed models for faster subsequent loads
+ */
+export async function loadONNXFromFile(
+  engine: TinyInferInstance,
+  file: File,
+  options: { useCache?: boolean } = {}
+): Promise<void> {
+  const { useCache = true } = options
+
+  try {
+    console.log(`Loading ONNX model from file: ${file.name}`)
+
+    let modelDef: ModelDef
+
+    // Check cache if enabled
+    if (useCache) {
+      const cacheKey = await generateCacheKeyFromFile(file)
+      const cached = await getCachedModel(cacheKey)
+
+      if (cached) {
+        console.log('Using cached model')
+        modelDef = cached
+      } else {
+        console.log('Parsing ONNX model...')
+        modelDef = await onnxLoadFromFile(file)
+
+        // Cache the parsed model
+        await cacheModel(cacheKey, modelDef, {
+          name: file.name,
+          size: file.size,
+          format: 'onnx',
+        })
+      }
+    } else {
+      modelDef = await onnxLoadFromFile(file)
+    }
+
+    // Load into engine
+    const json = JSON.stringify(modelDef)
+    await loadModelFromJSON(engine, json)
+
+    console.log('ONNX model loaded successfully')
+  } catch (error) {
+    console.error('Failed to load ONNX model from file:', error)
+    throw new Error(`Failed to load ONNX model: ${error}`)
+  }
+}
+
+/**
+ * Load ONNX model from URL with caching
+ * Automatically caches parsed models for faster subsequent loads
+ */
+export async function loadONNXFromURL(
+  engine: TinyInferInstance,
+  url: string,
+  options: { useCache?: boolean } = {}
+): Promise<void> {
+  const { useCache = true } = options
+
+  try {
+    console.log(`Loading ONNX model from URL: ${url}`)
+
+    let modelDef: ModelDef
+
+    // Check cache if enabled
+    if (useCache) {
+      const cacheKey = generateCacheKeyFromURL(url)
+      const cached = await getCachedModel(cacheKey)
+
+      if (cached) {
+        console.log('Using cached model')
+        modelDef = cached
+      } else {
+        console.log('Fetching and parsing ONNX model...')
+        modelDef = await onnxLoadFromURL(url)
+
+        // Estimate size (rough estimate based on JSON size)
+        const jsonSize = JSON.stringify(modelDef).length
+
+        // Cache the parsed model
+        await cacheModel(cacheKey, modelDef, {
+          name: url.split('/').pop() || 'model',
+          size: jsonSize,
+          format: 'onnx',
+        })
+      }
+    } else {
+      modelDef = await onnxLoadFromURL(url)
+    }
+
+    // Load into engine
+    const json = JSON.stringify(modelDef)
+    await loadModelFromJSON(engine, json)
+
+    console.log('ONNX model loaded successfully')
+  } catch (error) {
+    console.error('Failed to load ONNX model from URL:', error)
+    throw new Error(`Failed to load ONNX model from ${url}: ${error}`)
+  }
+}
+
+/**
+ * Clear all cached models
+ */
+export async function clearModelCache(): Promise<void> {
+  await clearCache()
+  console.log('Model cache cleared')
+}
+
+/**
+ * Get model cache statistics
+ */
+export async function getModelCacheStats() {
+  return await getCacheStats()
+}
+
 export default {
   initWasm,
   getWasm,
@@ -352,4 +489,11 @@ export default {
   createInferenceEngine,
   createBenchmark,
   createTensor,
+  loadModelFromJSON,
+  loadModelFromURL,
+  loadModelFromFile,
+  loadONNXFromFile,
+  loadONNXFromURL,
+  clearModelCache,
+  getModelCacheStats,
 };

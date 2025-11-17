@@ -4,12 +4,130 @@
 
 ## 目录
 
+- [🆕 浏览器直接加载 ONNX (推荐)](#浏览器直接加载-onnx-推荐)
 - [模型格式](#模型格式)
 - [加载方式](#加载方式)
 - [ONNX 转换](#onnx-转换)
 - [JavaScript API](#javascript-api)
 - [示例](#示例)
 - [最佳实践](#最佳实践)
+
+---
+
+## 🆕 浏览器直接加载 ONNX (推荐)
+
+**新功能！** TinyInfer 现在支持在浏览器中直接加载 ONNX 模型，无需服务器端转换。
+
+### 主要特性
+
+✅ **零服务器依赖** - 完全在浏览器中解析 ONNX 模型
+✅ **自动缓存** - IndexedDB 缓存已解析模型，加速后续加载
+✅ **即插即用** - 无需 Python 或命令行工具
+✅ **支持拖拽** - 直接拖拽 ONNX 文件到浏览器
+
+### 快速开始
+
+#### 1. 从文件加载 ONNX
+
+```typescript
+import { initWasm, createInferenceEngine, loadONNXFromFile } from '@/lib/tinyinfer'
+
+// 初始化
+await initWasm()
+const engine = createInferenceEngine()
+
+// 用户上传 ONNX 文件
+const fileInput = document.getElementById('fileInput') as HTMLInputElement
+fileInput.addEventListener('change', async (e) => {
+  const file = e.target.files[0]
+
+  // 直接加载 ONNX (自动缓存)
+  await loadONNXFromFile(engine, file)
+
+  console.log('✅ ONNX 模型加载成功！')
+
+  // 运行推理
+  const input = new Float32Array([1, 2, 3, 4])
+  const output = engine.infer(input, [4])
+  console.log('输出:', output)
+})
+```
+
+#### 2. 从 URL 加载 ONNX
+
+```typescript
+import { loadONNXFromURL } from '@/lib/tinyinfer'
+
+await initWasm()
+const engine = createInferenceEngine()
+
+// 从远程 URL 加载 ONNX 模型
+await loadONNXFromURL(engine, 'https://example.com/models/model.onnx')
+
+console.log('✅ 模型加载成功！')
+```
+
+#### 3. 缓存管理
+
+```typescript
+import {
+  getModelCacheStats,
+  clearModelCache
+} from '@/lib/tinyinfer'
+
+// 查看缓存统计
+const stats = await getModelCacheStats()
+console.log(`已缓存模型: ${stats.count}`)
+console.log(`缓存大小: ${(stats.totalSize / 1024 / 1024).toFixed(2)} MB`)
+
+// 清除缓存
+await clearModelCache()
+```
+
+### 支持的 ONNX 算子
+
+浏览器 ONNX 加载器支持以下算子（与 Python 转换工具相同）:
+
+| ONNX 算子 | TinyInfer 算子 | 说明 |
+|-----------|---------------|------|
+| `Relu` | `ReLU` | ReLU 激活 |
+| `Sigmoid` | `Sigmoid` | Sigmoid 激活 |
+| `Tanh` | `Tanh` | Tanh 激活 |
+| `Softmax` | `Softmax` | Softmax |
+| `MatMul` | `MatMul` | 矩阵乘法 |
+| `Gemm` | `Gemm` | 通用矩阵乘法 |
+| `Conv` | `Conv2D` | 2D 卷积 |
+| `MaxPool` | `MaxPool2D` | 最大池化 |
+| `AveragePool` | `AvgPool2D` | 平均池化 |
+| `GlobalAveragePool` | `GlobalAvgPool2D` | 全局平均池化 |
+| `BatchNormalization` | `BatchNorm2D` | 批归一化 |
+| `Add` | `Add` | 加法 |
+| `Sub` | `Sub` | 减法 |
+| `Mul` | `Mul` | 乘法 |
+| `Div` | `Div` | 除法 |
+| `Transpose` | `Transpose` | 转置 |
+| `Reshape` | `Reshape` | 重塑 |
+| `Concat` | `Concat` | 拼接 |
+| `Split` | `Split` | 分割 |
+| `Gather` | `Gather` | 索引收集 |
+
+### 性能对比
+
+| 加载方式 | 首次加载 | 缓存加载 | 依赖 |
+|---------|---------|---------|------|
+| 浏览器 ONNX | ~200ms | ~50ms | 无 |
+| Python 转换 + JSON | ~100ms | ~100ms | Python |
+
+**推荐**: 生产环境使用浏览器直接加载 ONNX，获得最佳用户体验。
+
+### 完整示例
+
+查看 [browser-onnx-example.ts](../examples/browser-onnx-example.ts) 获取完整的浏览器应用示例，包括:
+
+- 拖拽上传 ONNX 文件
+- URL 加载
+- 缓存管理界面
+- 推理演示
 
 ---
 

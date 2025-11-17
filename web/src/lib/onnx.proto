@@ -1,0 +1,136 @@
+// Simplified ONNX protobuf schema for TinyInfer
+// Based on: https://github.com/onnx/onnx/blob/main/onnx/onnx.proto
+
+syntax = "proto3";
+
+package onnx;
+
+// Version
+message Version {
+  int64 _START_VERSION = 1;
+  int64 IR_VERSION = 2;
+  int64 _END_VERSION = 3;
+}
+
+// Attribute value
+message AttributeProto {
+  enum AttributeType {
+    UNDEFINED = 0;
+    FLOAT = 1;
+    INT = 2;
+    STRING = 3;
+    TENSOR = 4;
+    GRAPH = 5;
+    FLOATS = 6;
+    INTS = 7;
+    STRINGS = 8;
+  }
+
+  string name = 1;
+  AttributeType type = 20;
+
+  float f = 2;
+  int64 i = 3;
+  bytes s = 4;
+  TensorProto t = 5;
+  repeated float floats = 6;
+  repeated int64 ints = 7;
+  repeated bytes strings = 8;
+}
+
+// Tensor data type
+enum TensorProto_DataType {
+  UNDEFINED = 0;
+  FLOAT = 1;
+  UINT8 = 2;
+  INT8 = 3;
+  UINT16 = 4;
+  INT16 = 5;
+  INT32 = 6;
+  INT64 = 7;
+  STRING = 8;
+  BOOL = 9;
+  FLOAT16 = 10;
+  DOUBLE = 11;
+  UINT32 = 12;
+  UINT64 = 13;
+}
+
+// Tensor dimension
+message TensorShapeProto_Dimension {
+  oneof value {
+    int64 dim_value = 1;
+    string dim_param = 2;
+  }
+}
+
+// Tensor shape
+message TensorShapeProto {
+  repeated TensorShapeProto_Dimension dim = 1;
+}
+
+// Tensor type
+message TypeProto_Tensor {
+  TensorProto_DataType elem_type = 1;
+  TensorShapeProto shape = 2;
+}
+
+// Type
+message TypeProto {
+  oneof value {
+    TypeProto_Tensor tensor_type = 1;
+  }
+}
+
+// Tensor data
+message TensorProto {
+  repeated int64 dims = 1;
+  TensorProto_DataType data_type = 2;
+
+  // Raw data fields
+  bytes raw_data = 9;
+
+  // Typed data fields (only one should be used)
+  repeated float float_data = 4;
+  repeated int32 int32_data = 5;
+  repeated int64 int64_data = 7;
+  repeated double double_data = 10;
+  repeated uint64 uint64_data = 11;
+
+  string name = 8;
+}
+
+// Value info
+message ValueInfoProto {
+  string name = 1;
+  TypeProto type = 2;
+}
+
+// Node (operator)
+message NodeProto {
+  repeated string input = 1;
+  repeated string output = 2;
+  string name = 3;
+  string op_type = 4;
+  repeated AttributeProto attribute = 5;
+}
+
+// Graph
+message GraphProto {
+  repeated NodeProto node = 1;
+  string name = 2;
+  repeated TensorProto initializer = 5;
+  repeated ValueInfoProto input = 11;
+  repeated ValueInfoProto output = 12;
+}
+
+// Model
+message ModelProto {
+  int64 ir_version = 1;
+  repeated string opset_import = 8;
+  string producer_name = 2;
+  string producer_version = 3;
+  string domain = 4;
+  int64 model_version = 5;
+  GraphProto graph = 7;
+}
