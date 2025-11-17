@@ -24,6 +24,8 @@ export interface WasmModule {
 
 export interface TinyInferInstance {
   loadTestModel: () => void;
+  loadModelFromJSON: (json: string) => void;
+  isModelLoaded: () => boolean;
   infer: (inputData: Float32Array, inputShape: number[]) => Float32Array;
   getModelInfo: () => string;
   free: () => void;
@@ -156,6 +158,54 @@ export function createTensor(data: number[] | Float32Array, shape: number[]): Te
   return new (getWasm().Tensor)(float32Data, shape);
 }
 
+/**
+ * Load model from JSON string
+ */
+export async function loadModelFromJSON(engine: TinyInferInstance, json: string): Promise<void> {
+  try {
+    engine.loadModelFromJSON(json);
+  } catch (error) {
+    console.error('Failed to load model from JSON:', error);
+    throw new Error(`Model loading failed: ${error}`);
+  }
+}
+
+/**
+ * Load model from URL
+ */
+export async function loadModelFromURL(engine: TinyInferInstance, url: string): Promise<void> {
+  try {
+    console.log(`Loading model from URL: ${url}`);
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const json = await response.text();
+    await loadModelFromJSON(engine, json);
+    console.log('Model loaded successfully');
+  } catch (error) {
+    console.error('Failed to load model from URL:', error);
+    throw new Error(`Failed to load model from ${url}: ${error}`);
+  }
+}
+
+/**
+ * Load model from File object (user upload)
+ */
+export async function loadModelFromFile(engine: TinyInferInstance, file: File): Promise<void> {
+  try {
+    console.log(`Loading model from file: ${file.name}`);
+    const text = await file.text();
+    await loadModelFromJSON(engine, text);
+    console.log('Model loaded successfully');
+  } catch (error) {
+    console.error('Failed to load model from file:', error);
+    throw new Error(`Failed to load model from file: ${error}`);
+  }
+}
+
 // ============================================================================
 // Mock implementation for development (will be removed when WASM is compiled)
 // ============================================================================
@@ -167,6 +217,22 @@ function createMockWasm(): WasmModule {
     loadTestModel(): void {
       console.log('Mock: Loading test model...');
       this.initialized = true;
+    }
+
+    loadModelFromJSON(json: string): void {
+      console.log('Mock: Loading model from JSON...');
+      try {
+        JSON.parse(json); // Validate JSON
+        this.initialized = true;
+        console.log('Mock: Model loaded successfully');
+      } catch (error) {
+        console.error('Mock: Invalid JSON format');
+        throw new Error('Invalid model JSON format');
+      }
+    }
+
+    isModelLoaded(): boolean {
+      return this.initialized;
     }
 
     infer(inputData: Float32Array, inputShape: number[]): Float32Array {

@@ -1,6 +1,6 @@
 use wasm_bindgen::prelude::*;
 use crate::tensor::{Tensor, Shape};
-use crate::engine::{Model, ComputeGraph, Node, Runtime};
+use crate::engine::{Model, ComputeGraph, Node, Runtime, ModelLoader};
 use std::collections::HashMap;
 
 /// TinyInfer API - Main entry point for JavaScript
@@ -42,6 +42,24 @@ impl TinyInfer {
 
         self.model = Model::new(graph);
         self.model.set_initialized(true);
+    }
+
+    /// Load a model from JSON string
+    #[wasm_bindgen(js_name = loadModelFromJSON)]
+    pub fn load_model_from_json(&mut self, json: &str) -> Result<(), JsValue> {
+        match ModelLoader::load_from_json(json) {
+            Ok(model) => {
+                self.model = model;
+                Ok(())
+            }
+            Err(e) => Err(JsValue::from_str(&format!("Failed to load model: {}", e))),
+        }
+    }
+
+    /// Check if model is loaded
+    #[wasm_bindgen(js_name = isModelLoaded)]
+    pub fn is_model_loaded(&self) -> bool {
+        self.model.is_initialized()
     }
 
     /// Run inference with the loaded model

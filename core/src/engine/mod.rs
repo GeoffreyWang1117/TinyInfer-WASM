@@ -1,9 +1,13 @@
 mod graph;
 mod model;
+mod model_def;
+mod model_loader;
 mod runtime;
 
 pub use graph::{ComputeGraph, Node, NodeId};
 pub use model::Model;
+pub use model_def::{ModelDef, GraphDef, NodeDef, EdgeDef, WeightDef, AttributeValue};
+pub use model_loader::{ModelLoader, create_simple_relu_model};
 pub use runtime::Runtime;
 
 #[cfg(test)]

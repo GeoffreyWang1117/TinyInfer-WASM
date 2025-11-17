@@ -68,6 +68,8 @@ http://localhost:5173/test-wasm.html
 
 ### 在项目中使用
 
+#### 基础示例
+
 ```javascript
 import { initWasm, createInferenceEngine } from '@/lib/tinyinfer';
 
@@ -88,7 +90,27 @@ console.log('输入:', input);
 console.log('输出:', output); // [0, 2, 0, 4] - ReLU 应用后
 ```
 
-详细构建说明请查看 [BUILD.md](BUILD.md)。
+#### 加载真实模型 ⭐ 新功能
+
+```javascript
+import { initWasm, createInferenceEngine, loadModelFromURL } from '@/lib/tinyinfer';
+
+// 初始化
+await initWasm();
+const engine = createInferenceEngine();
+
+// 从 URL 加载模型
+await loadModelFromURL(engine, '/models/my_model.json');
+
+// 或从 ONNX 转换的模型
+// python tools/onnx_to_tinyinfer.py model.onnx model.json
+await loadModelFromURL(engine, '/models/model.json');
+
+// 执行推理
+const output = engine.infer(input, shape);
+```
+
+详细说明请查看 [模型加载指南](docs/MODEL_LOADING.md) 和 [BUILD.md](BUILD.md)。
 
 ## 📚 文档
 
@@ -100,6 +122,7 @@ console.log('输出:', output); // [0, 2, 0, 4] - ReLU 应用后
 ### 开发文档
 - **[API 参考](docs/API.md)** - 完整的 JavaScript 和 Rust API 文档
 - **[算子文档](docs/OPERATORS.md)** - 所有算子的详细说明和使用示例
+- **[模型加载指南](docs/MODEL_LOADING.md)** - 如何加载真实模型（支持 ONNX 转换）⭐ 新增
 - **[工具文档](docs/TOOLS.md)** - 性能分析和张量工具库
 
 ### 优化和部署
