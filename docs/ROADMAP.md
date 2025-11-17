@@ -714,4 +714,7 @@ A: 通常影响很小：
 
 **立即开始:** Phase 6 - 浏览器本地化
 
-查看 [实施指南](./IMPLEMENTATION_GUIDE.md) 了解详细步骤。
+查看各个 Phase 文档了解详细实施步骤：
+- [Phase 6 文档](./PHASE6_BROWSER_ONNX.md)
+- [Phase 7 文档](./PHASE7_TRANSFORMER_SUPPORT.md)
+- [Phase 8 文档](./PHASE8_PERFORMANCE_OPT.md)

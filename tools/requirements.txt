@@ -1,0 +1,11 @@
+# TinyInfer-WASM Tools Requirements
+
+# ONNX model loading and conversion
+onnx>=1.14.0
+numpy>=1.24.0
+
+# Optional: ONNX optimization
+# onnxoptimizer>=0.3.0
+
+# Optional: ONNX Runtime for quantization
+# onnxruntime>=1.15.0

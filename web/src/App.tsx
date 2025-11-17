@@ -6,6 +6,7 @@ import TextEmbedding from './pages/TextEmbedding'
 import ChatGeneration from './pages/ChatGeneration'
 import Benchmark from './pages/Benchmark'
 import PerformanceComparison from './pages/PerformanceComparison'
+import WorkerDemo from './pages/WorkerDemo'
 
 function App() {
   const wasm = useWasm()
@@ -109,6 +110,12 @@ function App() {
               >
                 性能对比
               </Link>
+              <Link
+                to="/worker"
+                className="border-b-2 border-transparent hover:border-blue-500 px-1 py-4 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Worker 演示
+              </Link>
             </div>
           </div>
         </nav>
@@ -122,6 +129,7 @@ function App() {
             <Route path="/chat" element={<ChatGeneration />} />
             <Route path="/benchmark" element={<Benchmark />} />
             <Route path="/comparison" element={<PerformanceComparison />} />
+            <Route path="/worker" element={<WorkerDemo />} />
           </Routes>
         </main>
 

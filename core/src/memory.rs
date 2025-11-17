@@ -136,6 +136,7 @@ impl SharedMemoryPool {
         self.pool.lock().unwrap().hit_rate()
     }
 
+    #[allow(dead_code)]
     pub fn clear(&self) {
         self.pool.lock().unwrap().clear()
     }
@@ -165,6 +166,7 @@ impl PooledBuffer {
     }
 
     /// Get reference to buffer data
+    #[allow(dead_code)]
     pub fn data(&self) -> &[f32] {
         self.buffer.as_ref().unwrap()
     }
@@ -175,6 +177,7 @@ impl PooledBuffer {
     }
 
     /// Take ownership of buffer (prevents auto-return to pool)
+    #[allow(dead_code)]
     pub fn take(mut self) -> Vec<f32> {
         self.buffer.take().unwrap()
     }
