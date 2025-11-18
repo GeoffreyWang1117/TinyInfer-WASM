@@ -1,0 +1,11 @@
+# Coverage Reports
+
+# Vitest coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Playwright artifacts
+playwright-report/
+playwright/.cache/
+test-results/
