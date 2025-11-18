@@ -28,11 +28,6 @@ nvm install 18
 nvm use 18
 ```
 
-4. **pnpm** (可选，推荐)
-```bash
-npm install -g pnpm
-```
-
 ## 🔨 构建步骤
 
 ### 1. 构建 WASM 核心模块
@@ -59,13 +54,13 @@ wasm-pack build --target web --release --out-dir ../web/public/wasm
 cd web
 
 # 安装依赖
-pnpm install  # 或 npm install
+npm install
 
 # 开发服务器
-pnpm dev      # 或 npm run dev
+npm run dev
 
 # 生产构建
-pnpm build    # 或 npm run build
+npm run build
 ```
 
 **输出目录:** `web/dist/`
@@ -167,7 +162,7 @@ wasm-opt = false
 cd core && wasm-pack build --target web --release --out-dir ../web/public/wasm
 
 # 构建 Web 应用
-cd ../web && pnpm build
+cd ../web && npm run build
 ```
 
 ### 2. 静态文件部署
@@ -288,7 +283,7 @@ cargo watch -s "wasm-pack build --target web --dev --out-dir ../web/public/wasm"
 
 # 终端 2: Web 开发服务器
 cd web
-pnpm dev
+npm run dev
 ```
 
 ### 调试 WASM

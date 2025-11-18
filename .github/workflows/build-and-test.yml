@@ -111,7 +111,7 @@ jobs:
         with:
           node-version: 18
           cache: 'npm'
-          cache-dependency-path: web/package-lock.json
+          cache-dependency-path: 'web/package-lock.json'
 
       - name: Download WASM artifacts
         uses: actions/download-artifact@v3

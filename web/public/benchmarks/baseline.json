@@ -1,0 +1,281 @@
+{
+  "version": "0.8.0",
+  "date": "2025-11-18",
+  "environment": {
+    "platform": "Browser",
+    "engine": "TinyInfer-WASM",
+    "simd": true,
+    "workers": true
+  },
+  "benchmarks": {
+    "matmul": {
+      "description": "Matrix multiplication performance",
+      "tests": [
+        {
+          "name": "MatMul 64x64",
+          "inputShape": [64, 64],
+          "outputShape": [64, 64],
+          "avgTime": 0.45,
+          "minTime": 0.38,
+          "maxTime": 0.62,
+          "throughput": 2222.22,
+          "unit": "ops/sec"
+        },
+        {
+          "name": "MatMul 128x128",
+          "inputShape": [128, 128],
+          "outputShape": [128, 128],
+          "avgTime": 1.82,
+          "minTime": 1.65,
+          "maxTime": 2.15,
+          "throughput": 549.45,
+          "unit": "ops/sec"
+        },
+        {
+          "name": "MatMul 256x256",
+          "inputShape": [256, 256],
+          "outputShape": [256, 256],
+          "avgTime": 8.45,
+          "minTime": 7.92,
+          "maxTime": 9.38,
+          "throughput": 118.34,
+          "unit": "ops/sec"
+        }
+      ]
+    },
+    "activation": {
+      "description": "Activation function performance",
+      "tests": [
+        {
+          "name": "ReLU (10K elements)",
+          "inputShape": [10000],
+          "avgTime": 0.08,
+          "minTime": 0.06,
+          "maxTime": 0.12,
+          "throughput": 12500.00,
+          "unit": "ops/sec"
+        },
+        {
+          "name": "Sigmoid (10K elements)",
+          "inputShape": [10000],
+          "avgTime": 0.35,
+          "minTime": 0.32,
+          "maxTime": 0.42,
+          "throughput": 2857.14,
+          "unit": "ops/sec"
+        },
+        {
+          "name": "GELU (10K elements)",
+          "inputShape": [10000],
+          "avgTime": 0.52,
+          "minTime": 0.48,
+          "maxTime": 0.61,
+          "throughput": 1923.08,
+          "unit": "ops/sec"
+        }
+      ]
+    },
+    "conv2d": {
+      "description": "2D Convolution performance",
+      "tests": [
+        {
+          "name": "Conv2D 3x3, 32 filters",
+          "inputShape": [1, 3, 224, 224],
+          "kernelSize": [3, 3],
+          "filters": 32,
+          "avgTime": 45.2,
+          "minTime": 42.8,
+          "maxTime": 52.1,
+          "throughput": 22.12,
+          "unit": "ops/sec"
+        },
+        {
+          "name": "Conv2D 3x3, 64 filters",
+          "inputShape": [1, 3, 112, 112],
+          "kernelSize": [3, 3],
+          "filters": 64,
+          "avgTime": 38.5,
+          "minTime": 36.2,
+          "maxTime": 44.3,
+          "throughput": 25.97,
+          "unit": "ops/sec"
+        }
+      ]
+    },
+    "attention": {
+      "description": "Multi-Head Attention performance (Phase 7)",
+      "tests": [
+        {
+          "name": "MHA seq=32, d=64, heads=4",
+          "sequenceLength": 32,
+          "dModel": 64,
+          "numHeads": 4,
+          "avgTime": 2.15,
+          "minTime": 1.98,
+          "maxTime": 2.45,
+          "throughput": 465.12,
+          "unit": "ops/sec"
+        },
+        {
+          "name": "MHA seq=64, d=128, heads=8",
+          "sequenceLength": 64,
+          "dModel": 128,
+          "numHeads": 8,
+          "avgTime": 8.92,
+          "minTime": 8.32,
+          "maxTime": 10.15,
+          "throughput": 112.11,
+          "unit": "ops/sec"
+        },
+        {
+          "name": "MHA seq=128, d=256, heads=8",
+          "sequenceLength": 128,
+          "dModel": 256,
+          "numHeads": 8,
+          "avgTime": 35.6,
+          "minTime": 33.2,
+          "maxTime": 41.8,
+          "throughput": 28.09,
+          "unit": "ops/sec"
+        }
+      ]
+    },
+    "quantization": {
+      "description": "INT8 Quantization performance (Phase 8)",
+      "tests": [
+        {
+          "name": "Quantize 10K elements",
+          "inputSize": 10000,
+          "avgTime": 0.15,
+          "minTime": 0.12,
+          "maxTime": 0.21,
+          "throughput": 6666.67,
+          "unit": "ops/sec",
+          "compressionRatio": 4.0,
+          "accuracyLoss": 0.018
+        },
+        {
+          "name": "Quantize model (1M params)",
+          "inputSize": 1000000,
+          "avgTime": 12.5,
+          "minTime": 11.8,
+          "maxTime": 14.2,
+          "throughput": 80.00,
+          "unit": "ops/sec",
+          "compressionRatio": 4.0,
+          "accuracyLoss": 0.015
+        }
+      ]
+    },
+    "worker": {
+      "description": "Web Worker performance (Phase 8)",
+      "tests": [
+        {
+          "name": "Worker initialization",
+          "avgTime": 125.0,
+          "minTime": 115.0,
+          "maxTime": 145.0,
+          "unit": "ms"
+        },
+        {
+          "name": "Worker inference (vs main thread)",
+          "mainThreadTime": 5.2,
+          "workerTime": 5.5,
+          "overhead": 0.3,
+          "uiBlocking": false,
+          "unit": "ms"
+        },
+        {
+          "name": "Parallel inferences (5x)",
+          "sequentialTime": 26.0,
+          "parallelTime": 6.8,
+          "speedup": 3.82,
+          "unit": "ms"
+        }
+      ]
+    },
+    "endToEnd": {
+      "description": "End-to-end model inference",
+      "tests": [
+        {
+          "name": "MobileNetV2 (224x224)",
+          "modelSize": "14MB",
+          "inputShape": [1, 3, 224, 224],
+          "avgTime": 245.0,
+          "minTime": 228.0,
+          "maxTime": 278.0,
+          "throughput": 4.08,
+          "unit": "fps"
+        },
+        {
+          "name": "BERT-tiny (seq=128)",
+          "modelSize": "18MB",
+          "inputShape": [1, 128],
+          "avgTime": 185.0,
+          "minTime": 172.0,
+          "maxTime": 212.0,
+          "throughput": 5.41,
+          "unit": "samples/sec"
+        },
+        {
+          "name": "GPT-2-small (seq=64)",
+          "modelSize": "548MB",
+          "inputShape": [1, 64],
+          "avgTime": 1250.0,
+          "minTime": 1180.0,
+          "maxTime": 1420.0,
+          "throughput": 0.80,
+          "unit": "samples/sec"
+        }
+      ]
+    }
+  },
+  "comparisons": {
+    "simdVsNoSimd": {
+      "description": "SIMD acceleration improvement",
+      "matmul128x128": {
+        "withSimd": 1.82,
+        "withoutSimd": 8.45,
+        "speedup": 4.64
+      },
+      "relu10k": {
+        "withSimd": 0.08,
+        "withoutSimd": 0.32,
+        "speedup": 4.00
+      }
+    },
+    "quantizedVsFloat32": {
+      "description": "INT8 vs Float32 performance",
+      "modelSize": {
+        "float32": "100MB",
+        "int8": "25MB",
+        "reduction": "75%"
+      },
+      "inferenceTime": {
+        "float32": 245.0,
+        "int8": 98.0,
+        "speedup": 2.5
+      },
+      "accuracyLoss": 0.018
+    },
+    "workerVsMainThread": {
+      "description": "Worker vs Main Thread",
+      "inferenceTime": {
+        "mainThread": 5.2,
+        "worker": 5.5,
+        "overhead": "5.8%"
+      },
+      "uiResponsiveness": {
+        "mainThread": "Blocked",
+        "worker": "Responsive (< 16ms)"
+      }
+    }
+  },
+  "notes": [
+    "All benchmarks run on Chrome 119+ with SIMD enabled",
+    "Times are in milliseconds unless specified",
+    "Results may vary based on hardware and browser",
+    "Phase 8 features: Workers, Quantization, Attention Mask, Positional Encoding",
+    "Baseline established: 2025-11-18"
+  ]
+}

@@ -7,6 +7,8 @@ import ChatGeneration from './pages/ChatGeneration'
 import Benchmark from './pages/Benchmark'
 import PerformanceComparison from './pages/PerformanceComparison'
 import WorkerDemo from './pages/WorkerDemo'
+import QuantizationDemo from './pages/QuantizationDemo'
+import PositionalEncodingDemo from './pages/PositionalEncodingDemo'
 
 function App() {
   const wasm = useWasm()
@@ -116,6 +118,18 @@ function App() {
               >
                 Worker 演示
               </Link>
+              <Link
+                to="/quantization"
+                className="border-b-2 border-transparent hover:border-blue-500 px-1 py-4 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                量化
+              </Link>
+              <Link
+                to="/positional"
+                className="border-b-2 border-transparent hover:border-blue-500 px-1 py-4 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                位置编码
+              </Link>
             </div>
           </div>
         </nav>
@@ -130,6 +144,8 @@ function App() {
             <Route path="/benchmark" element={<Benchmark />} />
             <Route path="/comparison" element={<PerformanceComparison />} />
             <Route path="/worker" element={<WorkerDemo />} />
+            <Route path="/quantization" element={<QuantizationDemo />} />
+            <Route path="/positional" element={<PositionalEncodingDemo />} />
           </Routes>
         </main>
 
