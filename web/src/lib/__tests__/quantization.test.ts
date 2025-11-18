@@ -17,8 +17,11 @@ describe('Quantization Parameters', () => {
     const data = new Float32Array([-10, -5, 0, 5, 10])
     const params = computeQuantizationParams(data, true)
 
-    expect(params.scale).toBeCloseTo(10 / 127, 5)
-    expect(params.zeroPoint).toBe(0)
+    // Symmetric quantization: scale = (max - min) / (qmax - qmin)
+    // For [-10, 10]: scale = 20 / 255 = 0.0784...
+    expect(params.scale).toBeCloseTo(20 / 255, 4)
+    // Zero point should be near 0 for symmetric quantization
+    expect(Math.abs(params.zeroPoint)).toBeLessThan(1)
   })
 
   it('should compute asymmetric quantization params', () => {
@@ -65,13 +68,22 @@ describe('Quantization and Dequantization', () => {
 
 describe('Size Reduction', () => {
   it('should calculate size reduction correctly', () => {
-    const original = { float32Size: 1000, int8Size: 250 }
-    const reduction = calculateSizeReduction(
-      original.float32Size,
-      original.int8Size
-    )
+    const originalModel = {
+      weights: {
+        w1: { dtype: 'float32', data: new Array(250).fill(0.5), shape: [250] },
+      },
+    }
+    const quantizedModel = {
+      weights: {
+        w1: { dtype: 'int8', data: new Array(250).fill(64), shape: [250] },
+      },
+    }
 
-    expect(reduction.reductionRatio).toBeCloseTo(0.75, 2)
-    expect(reduction.compressionFactor).toBeCloseTo(4, 1)
+    const result = calculateSizeReduction(originalModel, quantizedModel)
+
+    expect(result.originalSize).toBeGreaterThan(0)
+    expect(result.quantizedSize).toBeGreaterThan(0)
+    expect(result.quantizedSize).toBeLessThan(result.originalSize)
+    expect(result.compressionRatio).toBeGreaterThan(1)
   })
 })

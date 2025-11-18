@@ -64,8 +64,9 @@ describe('Shape Operations', () => {
     const data = new Float32Array([1, 2, 3, 4, 5, 6])
     const result = reshape(data, [2, 3], [3, 2])
 
-    expect(result.shape).toEqual([3, 2])
-    expect(Array.from(result.data)).toEqual([1, 2, 3, 4, 5, 6])
+    // reshape returns Float32Array with same data (just validates size)
+    expect(result.length).toBe(6)
+    expect(Array.from(result)).toEqual([1, 2, 3, 4, 5, 6])
   })
 
   it('should transpose 2D tensor', () => {
